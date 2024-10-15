@@ -1,0 +1,36 @@
+import pdfplumber
+import pandas as pd
+
+# Ruta del archivo PDF
+pdf_path = "/home/pablo/Documentos/Programación/Untitled Folder 2/UP-consulta-de-cartilla (2).pdf"  # Cambia esto a la ruta de tu PDF
+csv_path = "/home/pablo/Documentos/Programación/Untitled Folder 2/medicos.csv"
+
+# Crear listas para almacenar la información
+nombres = []
+direcciones = []
+provincias = []
+telefonos = []
+
+# Leer el PDF usando pdfplumber
+with pdfplumber.open(pdf_path) as pdf:
+    for page in pdf.pages:
+        lines = page.extract_text().strip().split('\n')
+        for i in range(0, len(lines), 4):  # Leer de cuatro en cuatro
+            if i + 3 < len(lines):  # Asegurarse de que hay al menos cuatro líneas
+                nombres.append(lines[i].strip())
+                direcciones.append(lines[i + 1].strip())
+                provincias.append(lines[i + 2].strip())
+                telefonos.append(lines[i + 3].replace("Tel: ", "").strip())  # Eliminar "Tel: "
+
+# Crear un DataFrame y guardarlo como CSV
+data = {
+    "Nombre": nombres,
+    "Dirección": direcciones,
+    "Provincia": provincias,
+    "Teléfono": telefonos
+}
+
+df = pd.DataFrame(data)
+df.to_csv(csv_path, index=False, encoding='utf-8')
+
+print(f"CSV creado: {csv_path}")
