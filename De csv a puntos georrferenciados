@@ -1,0 +1,37 @@
+from geopy.geocoders import Nominatim
+import folium
+import pandas as pd
+import time
+
+# Cargar el archivo CSV
+df = pd.read_csv("/home/pablo/Documentos/Programación/Untitled Folder 2/medicos.csv")
+
+# Inicializar el geocodificador con un User-Agent
+geolocator = Nominatim(user_agent="mi_app_geocodificacion")
+
+# Crear un mapa centrado en Salta
+mapa = folium.Map(location=[-24.785, -65.411], zoom_start=6)
+
+# Iterar sobre el DataFrame y obtener las ubicaciones
+for index, row in df.iterrows():
+    address = f"{row['Dirección']}, {row['Código postal']}, {row['Provincia']}, Argentina"
+    
+    try:
+        location = geolocator.geocode(address, timeout=10)  # Aumentar el tiempo de espera a 10 segundos
+
+        if location:
+            folium.Marker(
+                location=[location.latitude, location.longitude],
+                popup=f"{row['Nombre']}\nTel: {row['Teléfono']}",
+                icon=folium.Icon(color='blue')
+            ).add_to(mapa)
+        else:
+            print(f"Ubicación no encontrada para: {address}")
+    
+    except Exception as e:
+        print(f"Error al geocodificar {address}: {e}")
+        time.sleep(1)  # Esperar un segundo antes de continuar
+
+# Guardar el mapa en un archivo HTML
+mapa.save("mapa_medicos.html")
+print("El mapa se ha guardado como 'mapa_medicos.html'.")
